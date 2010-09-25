@@ -223,3 +223,76 @@ class Oll_Perceptron_Aggressive2 extends Oll_Perceptron {
 		return (1.0 - $score) / ($bias + 1.0 / 2.0 / self::delta);
 	}
 }
+
+class Oll_NaiveBayse extends Oll {
+	const		total_key = "_oll_naivebayse_totla_key_";
+	private		$w = array();
+	private		$total = array(0.0000001, 0.0000001);
+
+	public function __construct($storage) {
+		parent::__construct($storage);
+		$d = $storage->get(self::total_key . "0");
+		if ($d !== null) {
+			$this->total[0] = $d;
+		}
+		$d = $storage->get(self::total_key . "1");
+		if ($d !== null) {
+			$this->total[1] = $d;
+		}
+	}
+
+	public function train($x, $y) {
+		if ($y > 0) {
+			foreach ($x as $k => $v) {
+				$t = $this->_get($k);
+				$this->_set($k, array($t[0] + intval($v), $t[1]));
+				$this->total[0] += intval($v);
+			}
+			$this->storage->set(self::total_key . "0", $this->total[0]);
+		} else {
+			foreach ($x as $k => $v) {
+				$t = $this->_get($k);
+				$this->_set($k, array($t[0], $t[1] + intval($v)));
+				$this->total[1] += intval($v);
+			}
+			$this->storage->set(self::total_key . "1", $this->total[1]);
+		}
+	}
+
+	public function test($x) {
+		$pp = 0.0;
+		$np = 0.0;
+		list($pt, $nt) = $this->total;
+		foreach ($x as $key => $value) {
+			list($p, $n) = $this->_get($k);
+			$pp += log(floatval($p) / $pt) * intval($v);
+			$np += log(floatval($n) / $nt) * intval($v);
+		}
+		$pp += log(floatval($pt) / ($pt + $nt));
+		$np += log(floatval($nt) / ($pt + $nt));
+
+		return ($pp > $np) ? 1 : -1;
+	}
+
+	private function _get($k) {
+		if (isset($this->w[$k])) {
+			return $this->w[$k];
+		}
+
+		$d0 = $this->storage->get($key . "0");
+		$d1 = $this->storage->get($key . "1");
+		if ($d0 !== null && $d1 !== null) {
+			$this->w[$k] = array($d0, $d1);
+		} else {
+			$this->w[$k] = array(0.0000001, 0.0000001);
+		}
+
+		return $this->w[$k];
+	}
+
+	private function _set($k, $v) {
+		$this->w[$k] = $v;
+		$this->storage->set($k . "0", $v[0]);
+		$this->storage->set($k . "1", $v[1]);
+	}
+}
