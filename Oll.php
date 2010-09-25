@@ -224,8 +224,8 @@ class Oll_Perceptron_Aggressive2 extends Oll_Perceptron {
 	}
 }
 
-class Oll_NaiveBayse extends Oll {
-	const		total_key = "_oll_naivebayse_totla_key_";
+class Oll_NaiveBayes extends Oll {
+	const		total_key = "_oll_naivebayes_totla_key_";
 	private		$w = array();
 	private		$total = array(0.0000001, 0.0000001);
 
